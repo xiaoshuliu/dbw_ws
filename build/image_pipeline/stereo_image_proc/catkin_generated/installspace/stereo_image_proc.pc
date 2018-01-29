@@ -1,0 +1,8 @@
+prefix=/home/liu/dbw_ws/install
+
+Name: stereo_image_proc
+Description: Description of stereo_image_proc
+Version: 1.12.22
+Cflags: -I/home/liu/dbw_ws/install/include
+Libs: -L/home/liu/dbw_ws/install/lib -lstereo_image_proc
+Requires: image_geometry image_proc sensor_msgs stereo_msgs

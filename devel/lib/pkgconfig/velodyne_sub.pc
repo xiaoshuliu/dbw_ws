@@ -1,0 +1,8 @@
+prefix=/home/liu/dbw_ws/devel
+
+Name: velodyne_sub
+Description: Description of velodyne_sub
+Version: 0.0.0
+Cflags: 
+Libs: -L/home/liu/dbw_ws/devel/lib 
+Requires: 

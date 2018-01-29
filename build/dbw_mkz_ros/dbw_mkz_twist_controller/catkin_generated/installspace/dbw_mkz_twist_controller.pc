@@ -1,0 +1,8 @@
+prefix=/home/liu/dbw_ws/install
+
+Name: dbw_mkz_twist_controller
+Description: Description of dbw_mkz_twist_controller
+Version: 1.0.5
+Cflags: -I/home/liu/dbw_ws/install/include
+Libs: -L/home/liu/dbw_ws/install/lib 
+Requires: 

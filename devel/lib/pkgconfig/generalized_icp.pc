@@ -1,0 +1,8 @@
+prefix=/home/liu/dbw_ws/devel
+
+Name: generalized_icp
+Description: Description of generalized_icp
+Version: 0.0.0
+Cflags: 
+Libs: -L/home/liu/dbw_ws/devel/lib 
+Requires: 

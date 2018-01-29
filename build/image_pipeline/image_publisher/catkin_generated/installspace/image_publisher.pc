@@ -1,0 +1,8 @@
+prefix=/home/liu/dbw_ws/install
+
+Name: image_publisher
+Description: Description of image_publisher
+Version: 1.12.22
+Cflags: -I/home/liu/dbw_ws/install/include
+Libs: -L/home/liu/dbw_ws/install/lib 
+Requires: 

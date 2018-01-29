@@ -1,0 +1,8 @@
+prefix=/home/liu/dbw_ws/install
+
+Name: camera_calibration
+Description: Description of camera_calibration
+Version: 1.12.22
+Cflags: 
+Libs: -L/home/liu/dbw_ws/install/lib 
+Requires: 

@@ -1,0 +1,2 @@
+set(novatel_msgs_MESSAGE_FILES "/home/liu/dbw_ws/src/novatel_span_driver/novatel_msgs/msg/Ack.msg;/home/liu/dbw_ws/src/novatel_span_driver/novatel_msgs/msg/CommonFooter.msg;/home/liu/dbw_ws/src/novatel_span_driver/novatel_msgs/msg/CommonHeader.msg;/home/liu/dbw_ws/src/novatel_span_driver/novatel_msgs/msg/BESTPOS.msg;/home/liu/dbw_ws/src/novatel_span_driver/novatel_msgs/msg/CORRIMUDATA.msg;/home/liu/dbw_ws/src/novatel_span_driver/novatel_msgs/msg/INSCOV.msg;/home/liu/dbw_ws/src/novatel_span_driver/novatel_msgs/msg/INSPVAX.msg")
+set(novatel_msgs_SERVICE_FILES "")

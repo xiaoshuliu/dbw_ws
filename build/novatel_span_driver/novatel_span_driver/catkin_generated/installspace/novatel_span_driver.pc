@@ -1,0 +1,8 @@
+prefix=/home/liu/dbw_ws/install
+
+Name: novatel_span_driver
+Description: Description of novatel_span_driver
+Version: 1.0.0
+Cflags: 
+Libs: -L/home/liu/dbw_ws/install/lib 
+Requires: 

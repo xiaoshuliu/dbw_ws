@@ -1,0 +1,8 @@
+prefix=/home/liu/dbw_ws/install
+
+Name: dataspeed_can_msgs
+Description: Description of dataspeed_can_msgs
+Version: 1.0.7
+Cflags: -I/home/liu/dbw_ws/install/include
+Libs: -L/home/liu/dbw_ws/install/lib 
+Requires: 

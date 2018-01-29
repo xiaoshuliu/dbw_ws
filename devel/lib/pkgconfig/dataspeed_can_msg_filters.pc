@@ -1,0 +1,8 @@
+prefix=/home/liu/dbw_ws/devel
+
+Name: dataspeed_can_msg_filters
+Description: Description of dataspeed_can_msg_filters
+Version: 1.0.7
+Cflags: -I/home/liu/dbw_ws/src/dataspeed_can/dataspeed_can_msg_filters/include
+Libs: -L/home/liu/dbw_ws/devel/lib 
+Requires: roscpp can_msgs
