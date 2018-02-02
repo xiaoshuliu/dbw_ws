@@ -96,6 +96,7 @@ void callback_lidar_sync(const sensor_msgs::PointCloud2ConstPtr& cloud_msg_1,
     pcl::PointCloud<pcl::PointXYZ>::Ptr ptrCloud_2(new pcl::PointCloud<pcl::PointXYZ>);
     pcl::PointCloud<pcl::PointXYZ>::Ptr ptrCloud_3(new pcl::PointCloud<pcl::PointXYZ>);
 
+
     fprintf(f_1, "%f, ", cloud_msg_1->header.stamp.toSec());
     fprintf(f_1, "%f, ", cloud_msg_2->header.stamp.toSec());
     fprintf(f_1, "%f, ", cloud_msg_3->header.stamp.toSec());

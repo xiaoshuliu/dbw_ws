@@ -151,6 +151,21 @@ void callback(const sensor_msgs::CameraInfoConstPtr& msg_info,
 	//ros::shutdown();
 }
 
+void callback_lidar_1(const sensor_msgs::PointCloud2ConstPtr& cloud_msg){
+
+	// pcl::PointCloud<pcl::PointXYZ>::Ptr ptrCloud_1(new pcl::PointCloud<pcl::PointXYZ>);
+    pcl::fromROSMsg(*cloud_msg,point_cloud);
+    // std::cout << "original pc" << point_cloud.size() << "\n";
+    point_cloud = transform(point_cloud, 0, 0, 0, config.initialRot[0], config.initialRot[1], config.initialRot[2]);
+    // std::cout << "transformed pc" << point_cloud.size() << "\n";
+    point_cloud = intensityByRangeDiff(point_cloud, config);
+    // std::cout << "intensity diff pc" << point_cloud.size() << "\n";
+    pcl::PointCloud<pcl::PointXYZ> retval = *(toPointsXYZ(point_cloud));
+    // std::cout << "xyz pc" << retval.size() << "\n";
+    cv::Mat temp_mat(config.s, CV_8UC3);
+    getCorners(temp_mat, retval, config.P, config.num_of_markers, config.MAX_ITERS);
+
+}
 
 int main(int argc, char** argv)
 {
@@ -182,12 +197,17 @@ int main(int argc, char** argv)
 		ROS_INFO_STREAM("Reading CameraInfo from configuration file");
   		n.getParam("/lidar_camera_calibration/velodyne_topic", VELODYNE_TOPIC);
 
-		message_filters::Subscriber<sensor_msgs::PointCloud2> cloud_sub(n, VELODYNE_TOPIC, 1);
+		message_filters::Subscriber<sensor_msgs::PointCloud2> cloud_sub(n, "velodyne_points", 1);
+		cout << "velodyne topic: " << VELODYNE_TOPIC << "\n";
 		message_filters::Subscriber<lidar_camera_calibration::marker_6dof> rt_sub(n, "lidar_camera_calibration_rt", 1);
 
 		typedef sync_policies::ApproximateTime<sensor_msgs::PointCloud2, lidar_camera_calibration::marker_6dof> MySyncPolicy;
 		Synchronizer<MySyncPolicy> sync(MySyncPolicy(10), cloud_sub, rt_sub);
 		sync.registerCallback(boost::bind(&callback_noCam, _1, _2));
+		
+		// ******************** debug *********************
+		// ros::NodeHandle nh;
+		// ros::Subscriber sub_1 = nh.subscribe("/velodyne_points", 1000, &callback_lidar_1, ros::TransportHints().tcpNoDelay(true));
 
 		ros::spin();
 	}

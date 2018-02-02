@@ -85,7 +85,7 @@ Matrix4d calc_RT(MatrixXd lidar, MatrixXd camera, int MAX_ITERS, Eigen::Matrix3d
 		rmse_avg = 0.0;
 	}
 	int num_points = lidar.cols();
-	std::cout << "Number of points: " << num_points << std::endl;
+	// std::cout << "Number of points: " << num_points << std::endl;
 	Vector3d mu_lidar, mu_camera;
 	
 	mu_lidar << 0.0, 0.0, 0.0;
@@ -96,12 +96,14 @@ Matrix4d calc_RT(MatrixXd lidar, MatrixXd camera, int MAX_ITERS, Eigen::Matrix3d
 		mu_lidar(0) += lidar(0,i);
 		mu_lidar(1) += lidar(1,i);
 		mu_lidar(2) += lidar(2,i);
+		// std::cout << "lidar: x: " << lidar(0,i) << " y: " << lidar(1, i) << " z: " << lidar(2,i) << "\n"; 
 	}
 	for(int i=0; i<num_points; i++)
 	{
 		mu_camera(0) += camera(0,i);
 		mu_camera(1) += camera(1,i);
 		mu_camera(2) += camera(2,i);
+		// std::cout << "camera: x: " << camera(0,i) << " y: " << camera(1, i) << " z: " << camera(2,i) << "\n"; 
 	}
 
 	mu_lidar = mu_lidar/num_points;
@@ -150,9 +152,9 @@ Matrix4d calc_RT(MatrixXd lidar, MatrixXd camera, int MAX_ITERS, Eigen::Matrix3d
 
 	Vector3d ea = rotation.eulerAngles(2, 1, 0);
 
-	std::cout << "Rotation matrix: \n" << rotation << std::endl;
-	std::cout << "Rotation in Euler angles: \n" << ea*57.3 << std::endl;
-	std::cout << "Translation: \n" << translation << std::endl;
+	// std::cout << "Rotation matrix: \n" << rotation << std::endl;
+	// std::cout << "Rotation in Euler angles: \n" << ea*57.3 << std::endl;
+	// std::cout << "Translation: \n" << translation << std::endl;
 
 	MatrixXd eltwise_error = (camera - ((rotation*lidar).colwise() + translation)).array().square().colwise().sum();
 	double error = sqrt(eltwise_error.sum()/num_points);
@@ -196,7 +198,7 @@ Matrix4d calc_RT(MatrixXd lidar, MatrixXd camera, int MAX_ITERS, Eigen::Matrix3d
 		rotation_sum.w() = rotation_sum.w()/mag;
 
 		Eigen::Matrix3d rotation_avg = rotation_sum.toRotationMatrix();
-		std::cout << "Average rotation is:" << "\n" << rotation_avg << "\n";
+		// std::cout << "Average rotation is:" << "\n" << rotation_avg << "\n";
 		Eigen::Matrix3d final_rotation = rotation_avg * lidarToCamera;
 		Eigen::Vector3d final_angles = final_rotation.eulerAngles(2, 1, 0);
 
@@ -216,8 +218,8 @@ Matrix4d calc_RT(MatrixXd lidar, MatrixXd camera, int MAX_ITERS, Eigen::Matrix3d
 		T.topLeftCorner(3, 3) = rotation_avg;
 		T.col(3).head(3) = translation_sum/iteration_counter;
 		std::cout << "Average transformation is: \n" << T << "\n";
-		std::cout << "Final rotation is:" << "\n" << final_rotation << "\n";
-		std::cout << "Final ypr is:" << "\n" <<final_angles << "\n";
+		// std::cout << "Final rotation is:" << "\n" << final_rotation << "\n";
+		// std::cout << "Final ypr is:" << "\n" <<final_angles << "\n";
 
 		std::cout << "Average RMSE is: " <<  rmse_avg*1.0/iteration_counter << "\n";
 

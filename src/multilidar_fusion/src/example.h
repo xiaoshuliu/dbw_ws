@@ -4,9 +4,10 @@
 #include <sensor_msgs/Imu.h>
 #include "/home/liu/dbw_ws/devel/include/dbw_mkz_msgs/SteeringReport.h"
 #include <iostream>
+
 #include <pcl/common/transforms.h>
 #include <pcl_conversions/pcl_conversions.h>
-#include <pcl/point_cloud.h>
+#include <pcl_ros/point_cloud.h>
 #include <pcl/point_types.h>
 #include <string>
 #include <message_filters/subscriber.h>
