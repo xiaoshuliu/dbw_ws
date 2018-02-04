@@ -91,21 +91,21 @@ Matrix4d calc_RT(MatrixXd lidar, MatrixXd camera, int MAX_ITERS, Eigen::Matrix3d
 	mu_lidar << 0.0, 0.0, 0.0;
 	mu_camera << 0.0, 0.0, 0.0;
 
+	// perform the Kabsch Algorithm
 	for(int i=0; i<num_points; i++)
 	{
 		mu_lidar(0) += lidar(0,i);
 		mu_lidar(1) += lidar(1,i);
-		mu_lidar(2) += lidar(2,i);
-		// std::cout << "lidar: x: " << lidar(0,i) << " y: " << lidar(1, i) << " z: " << lidar(2,i) << "\n"; 
+		mu_lidar(2) += lidar(2,i); 
 	}
 	for(int i=0; i<num_points; i++)
 	{
 		mu_camera(0) += camera(0,i);
 		mu_camera(1) += camera(1,i);
 		mu_camera(2) += camera(2,i);
-		// std::cout << "camera: x: " << camera(0,i) << " y: " << camera(1, i) << " z: " << camera(2,i) << "\n"; 
 	}
 
+	// the average position of the points for one marker
 	mu_lidar = mu_lidar/num_points;
 	mu_camera = mu_camera/num_points;
 
@@ -208,6 +208,7 @@ Matrix4d calc_RT(MatrixXd lidar, MatrixXd camera, int MAX_ITERS, Eigen::Matrix3d
 					   << rotation_avg(1,0) << " " << rotation_avg(1,1) << " " << rotation_avg(1,2) << "\n"
 					   << rotation_avg(2,0) << " " << rotation_avg(2,1) << " " << rotation_avg(2,2) << "\n";*/
 
+		// The average rotation matrix until this iteration
 		log_avg_values << std::fixed << std::setprecision(8)
 						<< rotation_avg(0,0) << " " << rotation_avg(0,1) << " " << rotation_avg(0,2) << "\n"
 					   << rotation_avg(1,0) << " " << rotation_avg(1,1) << " " << rotation_avg(1,2) << "\n"
@@ -220,9 +221,9 @@ Matrix4d calc_RT(MatrixXd lidar, MatrixXd camera, int MAX_ITERS, Eigen::Matrix3d
 		std::cout << "Average transformation is: \n" << T << "\n";
 		// std::cout << "Final rotation is:" << "\n" << final_rotation << "\n";
 		// std::cout << "Final ypr is:" << "\n" <<final_angles << "\n";
+		// std::cout << "Average RMSE is: " <<  rmse_avg*1.0/iteration_counter << "\n";
 
-		std::cout << "Average RMSE is: " <<  rmse_avg*1.0/iteration_counter << "\n";
-
+		// calculate the error of average transformation (until this iteration) on the corners, in unit of m
 		MatrixXd eltwise_error_temp = (camera - ((rotation_avg*lidar).colwise() + (translation_sum/iteration_counter))).array().square().colwise().sum();
 		double error_temp = sqrt(eltwise_error_temp.sum()/num_points);
 		

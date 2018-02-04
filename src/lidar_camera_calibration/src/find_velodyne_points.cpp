@@ -41,7 +41,7 @@ using namespace pcl;
 
 
 string CAMERA_INFO_TOPIC;
-string VELODYNE_TOPIC;
+string VELODYNE_TOPIC = "velodyne_points";
 
 
 Mat projection_matrix;
@@ -62,97 +62,85 @@ void callback_noCam(const sensor_msgs::PointCloud2ConstPtr& msg_pc,
 	fromROSMsg(*msg_pc, point_cloud);
 
 	point_cloud = transform(point_cloud, 0, 0, 0, config.initialRot[0], config.initialRot[1], config.initialRot[2]);
-
 	//Rotation matrix to transform lidar point cloud to camera's frame
-
 	qlidarToCamera = Eigen::AngleAxisd(config.initialRot[2], Eigen::Vector3d::UnitZ())
 		*Eigen::AngleAxisd(config.initialRot[1], Eigen::Vector3d::UnitY())
 		*Eigen::AngleAxisd(config.initialRot[0], Eigen::Vector3d::UnitX());
-
 	lidarToCamera = qlidarToCamera.matrix();
+	std::cout << "\n\nInitial Rot" << lidarToCamera << "\n";
 
-	std:: cout << "\n\nInitial Rot" << lidarToCamera << "\n";
+	// filter the point cloud using intensityByRangeDiff method, this only keeps the edge of the board, where the difference of two adjacent points are larger than threshold
 	point_cloud = intensityByRangeDiff(point_cloud, config);
-	// x := x, y := -z, z := y
-
-	//pcl::io::savePCDFileASCII ("/home/vishnu/PCDs/msg_point_cloud.pcd", pc);  
-
-
 	cv::Mat temp_mat(config.s, CV_8UC3);
 	pcl::PointCloud<pcl::PointXYZ> retval = *(toPointsXYZ(point_cloud));
 
+	// store marker info from the aruco_mapping into local vector
 	std::vector<float> marker_info;
-
 	for(std::vector<float>::const_iterator it = msg_rt->dof.data.begin(); it != msg_rt->dof.data.end(); ++it)
 	{
 		marker_info.push_back(*it);
 		std::cout << *it << " ";
 	}
 	std::cout << "\n";
-
+	// get the corners of the 3D point cloud in lidar data
 	getCorners(temp_mat, retval, config.P, config.num_of_markers, config.MAX_ITERS);
+	// find transformation matrix using the corners in lidar data and camera data
 	find_transformation(marker_info, config.num_of_markers, config.MAX_ITERS, lidarToCamera);
 	//ros::shutdown();
 }
 
-void callback(const sensor_msgs::CameraInfoConstPtr& msg_info,
-			  const sensor_msgs::PointCloud2ConstPtr& msg_pc,
-			  const lidar_camera_calibration::marker_6dof::ConstPtr& msg_rt)
-{
+// No longer useful
+// void callback(const sensor_msgs::CameraInfoConstPtr& msg_info,
+// 			  const sensor_msgs::PointCloud2ConstPtr& msg_pc,
+// 			  const lidar_camera_calibration::marker_6dof::ConstPtr& msg_rt)
+// {
 
-	ROS_INFO_STREAM("Camera info received at " << msg_info->header.stamp.toSec());
-	ROS_INFO_STREAM("Velodyne scan received at " << msg_pc->header.stamp.toSec());
-	ROS_INFO_STREAM("marker_6dof received at " << msg_rt->header.stamp.toSec());
+// 	ROS_INFO_STREAM("Camera info received at " << msg_info->header.stamp.toSec());
+// 	ROS_INFO_STREAM("Velodyne scan received at " << msg_pc->header.stamp.toSec());
+// 	ROS_INFO_STREAM("marker_6dof received at " << msg_rt->header.stamp.toSec());
 
-	float p[12];
-	float *pp = p;
-	for (boost::array<double, 12ul>::const_iterator i = msg_info->P.begin(); i != msg_info->P.end(); i++)
-	{
-	*pp = (float)(*i);
-	pp++;
-	}
-	cv::Mat(3, 4, CV_32FC1, &p).copyTo(projection_matrix);
+// 	float p[12];
+// 	float *pp = p;
+// 	for (boost::array<double, 12ul>::const_iterator i = msg_info->P.begin(); i != msg_info->P.end(); i++)
+// 	{
+// 	*pp = (float)(*i);
+// 	pp++;
+// 	}
+// 	cv::Mat(3, 4, CV_32FC1, &p).copyTo(projection_matrix);
 
+// 	// Loading Velodyne point cloud_sub
+// 	fromROSMsg(*msg_pc, point_cloud);
+// 	point_cloud = transform(point_cloud, 0, 0, 0, config.initialRot[0], config.initialRot[1], config.initialRot[2]);
 
+// 	//Rotation matrix to transform lidar point cloud to camera's frame
+// 	qlidarToCamera = Eigen::AngleAxisd(config.initialRot[2], Eigen::Vector3d::UnitZ())
+// 		*Eigen::AngleAxisd(config.initialRot[1], Eigen::Vector3d::UnitY())
+// 		*Eigen::AngleAxisd(config.initialRot[0], Eigen::Vector3d::UnitX());
 
-	// Loading Velodyne point cloud_sub
-	fromROSMsg(*msg_pc, point_cloud);
+// 	lidarToCamera = qlidarToCamera.matrix();
 
-	point_cloud = transform(point_cloud, 0, 0, 0, config.initialRot[0], config.initialRot[1], config.initialRot[2]);
+// 	point_cloud = intensityByRangeDiff(point_cloud, config);
+// 	// x := x, y := -z, z := y
 
-	//Rotation matrix to transform lidar point cloud to camera's frame
+// 	cv::Mat temp_mat(config.s, CV_8UC3);
+// 	pcl::PointCloud<pcl::PointXYZ> retval = *(toPointsXYZ(point_cloud));
 
-	qlidarToCamera = Eigen::AngleAxisd(config.initialRot[2], Eigen::Vector3d::UnitZ())
-		*Eigen::AngleAxisd(config.initialRot[1], Eigen::Vector3d::UnitY())
-		*Eigen::AngleAxisd(config.initialRot[0], Eigen::Vector3d::UnitX());
+// 	std::vector<float> marker_info;
 
-	lidarToCamera = qlidarToCamera.matrix();
+// 	for(std::vector<float>::const_iterator it = msg_rt->dof.data.begin(); it != msg_rt->dof.data.end(); ++it)
+// 	{
+// 		marker_info.push_back(*it);
+// 		std::cout << *it << " ";
+// 	}
+// 	std::cout << "\n";
 
-	point_cloud = intensityByRangeDiff(point_cloud, config);
-	// x := x, y := -z, z := y
+// 	getCorners(temp_mat, retval, projection_matrix, config.num_of_markers, config.MAX_ITERS);
+// 	find_transformation(marker_info, config.num_of_markers, config.MAX_ITERS, lidarToCamera);
+// 	//ros::shutdown();
+// }
 
-	//pcl::io::savePCDFileASCII ("/home/vishnu/PCDs/msg_point_cloud.pcd", pc);  
-
-
-	cv::Mat temp_mat(config.s, CV_8UC3);
-	pcl::PointCloud<pcl::PointXYZ> retval = *(toPointsXYZ(point_cloud));
-
-	std::vector<float> marker_info;
-
-	for(std::vector<float>::const_iterator it = msg_rt->dof.data.begin(); it != msg_rt->dof.data.end(); ++it)
-	{
-		marker_info.push_back(*it);
-		std::cout << *it << " ";
-	}
-	std::cout << "\n";
-
-	getCorners(temp_mat, retval, projection_matrix, config.num_of_markers, config.MAX_ITERS);
-	find_transformation(marker_info, config.num_of_markers, config.MAX_ITERS, lidarToCamera);
-	//ros::shutdown();
-}
-
+// callback function for debug
 void callback_lidar_1(const sensor_msgs::PointCloud2ConstPtr& cloud_msg){
-
 	// pcl::PointCloud<pcl::PointXYZ>::Ptr ptrCloud_1(new pcl::PointCloud<pcl::PointXYZ>);
     pcl::fromROSMsg(*cloud_msg,point_cloud);
     // std::cout << "original pc" << point_cloud.size() << "\n";
@@ -173,44 +161,22 @@ int main(int argc, char** argv)
 	ros::init(argc, argv, "find_transform");
 
 	ros::NodeHandle n;
+	// n.getParam("/lidar_camera_calibration/velodyne_topic", VELODYNE_TOPIC);
+	// subscribe to the lidar topics
+	message_filters::Subscriber<sensor_msgs::PointCloud2> cloud_sub(n, VELODYNE_TOPIC, 1);
+	message_filters::Subscriber<lidar_camera_calibration::marker_6dof> rt_sub(n, "lidar_camera_calibration_rt", 1);
+	// synchronize the lidar points and the marker info
+	typedef sync_policies::ApproximateTime<sensor_msgs::PointCloud2, lidar_camera_calibration::marker_6dof> MySyncPolicy;
+	Synchronizer<MySyncPolicy> sync(MySyncPolicy(10), cloud_sub, rt_sub);
+	sync.registerCallback(boost::bind(&callback_noCam, _1, _2));
+	
+	// IF the "point cloud" window does not pop up, or there is nothing in the window, go into debug mode and modify the parameters (such as 1. topic name 2. initial rotation 3. point cloud ignoring range 4. threshold) until you see reasonable points in the window
+	// ******************** debug *********************
+	// ros::NodeHandle nh;
+	// ros::Subscriber sub_1 = nh.subscribe("/velodyne_points", 1000, &callback_lidar_1, ros::TransportHints().tcpNoDelay(true));
 
-	if(config.useCameraInfo)
-	{
-		ROS_INFO_STREAM("Reading CameraInfo from topic");
-		n.getParam("/lidar_camera_calibration/camera_info_topic", CAMERA_INFO_TOPIC);
-		n.getParam("/lidar_camera_calibration/velodyne_topic", VELODYNE_TOPIC);
+	ros::spin();
 
-		message_filters::Subscriber<sensor_msgs::CameraInfo> info_sub(n, CAMERA_INFO_TOPIC, 1);
-		message_filters::Subscriber<sensor_msgs::PointCloud2> cloud_sub(n, VELODYNE_TOPIC, 1);
-		message_filters::Subscriber<lidar_camera_calibration::marker_6dof> rt_sub(n, "lidar_camera_calibration_rt", 1);
-
-		std::cout << "done1\n";
-
-		typedef sync_policies::ApproximateTime<sensor_msgs::CameraInfo, sensor_msgs::PointCloud2, lidar_camera_calibration::marker_6dof> MySyncPolicy;
-		Synchronizer<MySyncPolicy> sync(MySyncPolicy(10), info_sub, cloud_sub, rt_sub);
-		sync.registerCallback(boost::bind(&callback, _1, _2, _3));
-
-		ros::spin();
-	}
-	else
-	{
-		ROS_INFO_STREAM("Reading CameraInfo from configuration file");
-  		n.getParam("/lidar_camera_calibration/velodyne_topic", VELODYNE_TOPIC);
-
-		message_filters::Subscriber<sensor_msgs::PointCloud2> cloud_sub(n, "velodyne_points", 1);
-		cout << "velodyne topic: " << VELODYNE_TOPIC << "\n";
-		message_filters::Subscriber<lidar_camera_calibration::marker_6dof> rt_sub(n, "lidar_camera_calibration_rt", 1);
-
-		typedef sync_policies::ApproximateTime<sensor_msgs::PointCloud2, lidar_camera_calibration::marker_6dof> MySyncPolicy;
-		Synchronizer<MySyncPolicy> sync(MySyncPolicy(10), cloud_sub, rt_sub);
-		sync.registerCallback(boost::bind(&callback_noCam, _1, _2));
-		
-		// ******************** debug *********************
-		// ros::NodeHandle nh;
-		// ros::Subscriber sub_1 = nh.subscribe("/velodyne_points", 1000, &callback_lidar_1, ros::TransportHints().tcpNoDelay(true));
-
-		ros::spin();
-	}
 
 	return EXIT_SUCCESS;
 }
